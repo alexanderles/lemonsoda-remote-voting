@@ -1,0 +1,2420 @@
+{
+	"id": "035b94bb547f2af093f4040a4ed09351",
+	"_format": "hh-sol-build-info-1",
+	"solcVersion": "0.8.19",
+	"solcLongVersion": "0.8.19+commit.7dd6d404",
+	"input": {
+		"language": "Solidity",
+		"sources": {
+			"contracts/IDAO.sol": {
+				"content": "// SPDX-License-Identifier: AGPL-3.0-or-later\r\n\r\npragma solidity ^0.8.17;\r\n\r\n/// @title IDAO\r\n/// @author Aragon Association - 2022-2023\r\n/// @notice The interface required for DAOs within the Aragon App DAO framework.\r\ninterface IDAO {\r\n    /// @notice The action struct to be consumed by the DAO's `execute` function resulting in an external call.\r\n    /// @param to The address to call.\r\n    /// @param value The native token value to be sent with the call.\r\n    /// @param data The bytes-encoded function selector and calldata for the call.\r\n    struct Action {\r\n        address to;\r\n        uint256 value;\r\n        bytes data;\r\n    }\r\n\r\n    /// @notice Checks if an address has permission on a contract via a permission identifier and considers if `ANY_ADDRESS` was used in the granting process.\r\n    /// @param _where The address of the contract.\r\n    /// @param _who The address of a EOA or contract to give the permissions.\r\n    /// @param _permissionId The permission identifier.\r\n    /// @param _data The optional data passed to the `PermissionCondition` registered.\r\n    /// @return Returns true if the address has permission, false if not.\r\n    function hasPermission(\r\n        address _where,\r\n        address _who,\r\n        bytes32 _permissionId,\r\n        bytes memory _data\r\n    ) external view returns (bool);\r\n\r\n    /// @notice Updates the DAO metadata (e.g., an IPFS hash).\r\n    /// @param _metadata The IPFS hash of the new metadata object.\r\n    function setMetadata(bytes calldata _metadata) external;\r\n\r\n    /// @notice Emitted when the DAO metadata is updated.\r\n    /// @param metadata The IPFS hash of the new metadata object.\r\n    event MetadataSet(bytes metadata);\r\n\r\n    /// @notice Executes a list of actions. If a zero allow-failure map is provided, a failing action reverts the entire excution. If a non-zero allow-failure map is provided, allowed actions can fail without the entire call being reverted.\r\n    /// @param _callId The ID of the call. The definition of the value of `callId` is up to the calling contract and can be used, e.g., as a nonce.\r\n    /// @param _actions The array of actions.\r\n    /// @param _allowFailureMap A bitmap allowing execution to succeed, even if individual actions might revert. If the bit at index `i` is 1, the execution succeeds even if the `i`th action reverts. A failure map value of 0 requires every action to not revert.\r\n    /// @return The array of results obtained from the executed actions in `bytes`.\r\n    /// @return The resulting failure map containing the actions have actually failed.\r\n    function execute(\r\n        bytes32 _callId,\r\n        Action[] memory _actions,\r\n        uint256 _allowFailureMap\r\n    ) external returns (bytes[] memory, uint256);\r\n\r\n    /// @notice Emitted when a proposal is executed.\r\n    /// @param actor The address of the caller.\r\n    /// @param callId The ID of the call.\r\n    /// @param actions The array of actions executed.\r\n    /// @param failureMap The failure map encoding which actions have failed.\r\n    /// @param execResults The array with the results of the executed actions.\r\n    /// @dev The value of `callId` is defined by the component/contract calling the execute function. A `Plugin` implementation can use it, for example, as a nonce.\r\n    event Executed(\r\n        address indexed actor,\r\n        bytes32 callId,\r\n        Action[] actions,\r\n        uint256 failureMap,\r\n        bytes[] execResults\r\n    );\r\n\r\n    /// @notice Emitted when a standard callback is registered.\r\n    /// @param interfaceId The ID of the interface.\r\n    /// @param callbackSelector The selector of the callback function.\r\n    /// @param magicNumber The magic number to be registered for the callback function selector.\r\n    event StandardCallbackRegistered(\r\n        bytes4 interfaceId,\r\n        bytes4 callbackSelector,\r\n        bytes4 magicNumber\r\n    );\r\n\r\n    /// @notice Deposits (native) tokens to the DAO contract with a reference string.\r\n    /// @param _token The address of the token or address(0) in case of the native token.\r\n    /// @param _amount The amount of tokens to deposit.\r\n    /// @param _reference The reference describing the deposit reason.\r\n    function deposit(address _token, uint256 _amount, string calldata _reference) external payable;\r\n\r\n    /// @notice Emitted when a token deposit has been made to the DAO.\r\n    /// @param sender The address of the sender.\r\n    /// @param token The address of the deposited token.\r\n    /// @param amount The amount of tokens deposited.\r\n    /// @param _reference The reference describing the deposit reason.\r\n    event Deposited(\r\n        address indexed sender,\r\n        address indexed token,\r\n        uint256 amount,\r\n        string _reference\r\n    );\r\n\r\n    /// @notice Emitted when a native token deposit has been made to the DAO.\r\n    /// @dev This event is intended to be emitted in the `receive` function and is therefore bound by the gas limitations for `send`/`transfer` calls introduced by [ERC-2929](https://eips.ethereum.org/EIPS/eip-2929).\r\n    /// @param sender The address of the sender.\r\n    /// @param amount The amount of native tokens deposited.\r\n    event NativeTokenDeposited(address sender, uint256 amount);\r\n\r\n    /// @notice Setter for the trusted forwarder verifying the meta transaction.\r\n    /// @param _trustedForwarder The trusted forwarder address.\r\n    function setTrustedForwarder(address _trustedForwarder) external;\r\n\r\n    /// @notice Getter for the trusted forwarder verifying the meta transaction.\r\n    /// @return The trusted forwarder address.\r\n    function getTrustedForwarder() external view returns (address);\r\n\r\n    /// @notice Emitted when a new TrustedForwarder is set on the DAO.\r\n    /// @param forwarder the new forwarder address.\r\n    event TrustedForwarderSet(address forwarder);\r\n\r\n    /// @notice Setter for the [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) signature validator contract.\r\n    /// @param _signatureValidator The address of the signature validator.\r\n    function setSignatureValidator(address _signatureValidator) external;\r\n\r\n    /// @notice Emitted when the signature validator address is updated.\r\n    /// @param signatureValidator The address of the signature validator.\r\n    event SignatureValidatorSet(address signatureValidator);\r\n\r\n    /// @notice Checks whether a signature is valid for the provided hash by forwarding the call to the set [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) signature validator contract.\r\n    /// @param _hash The hash of the data to be signed.\r\n    /// @param _signature The signature byte array associated with `_hash`.\r\n    /// @return Returns the `bytes4` magic value `0x1626ba7e` if the signature is valid.\r\n    function isValidSignature(bytes32 _hash, bytes memory _signature) external returns (bytes4);\r\n\r\n    /// @notice Registers an ERC standard having a callback by registering its [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID and callback function signature.\r\n    /// @param _interfaceId The ID of the interface.\r\n    /// @param _callbackSelector The selector of the callback function.\r\n    /// @param _magicNumber The magic number to be registered for the function signature.\r\n    function registerStandardCallback(\r\n        bytes4 _interfaceId,\r\n        bytes4 _callbackSelector,\r\n        bytes4 _magicNumber\r\n    ) external;\r\n}"
+			}
+		},
+		"settings": {
+			"optimizer": {
+				"enabled": false,
+				"runs": 200
+			},
+			"outputSelection": {
+				"*": {
+					"": [
+						"ast"
+					],
+					"*": [
+						"abi",
+						"metadata",
+						"devdoc",
+						"userdoc",
+						"storageLayout",
+						"evm.legacyAssembly",
+						"evm.bytecode",
+						"evm.deployedBytecode",
+						"evm.methodIdentifiers",
+						"evm.gasEstimates",
+						"evm.assembly"
+					]
+				}
+			}
+		}
+	},
+	"output": {
+		"contracts": {
+			"contracts/IDAO.sol": {
+				"IDAO": {
+					"abi": [
+						{
+							"anonymous": false,
+							"inputs": [
+								{
+									"indexed": true,
+									"internalType": "address",
+									"name": "sender",
+									"type": "address"
+								},
+								{
+									"indexed": true,
+									"internalType": "address",
+									"name": "token",
+									"type": "address"
+								},
+								{
+									"indexed": false,
+									"internalType": "uint256",
+									"name": "amount",
+									"type": "uint256"
+								},
+								{
+									"indexed": false,
+									"internalType": "string",
+									"name": "_reference",
+									"type": "string"
+								}
+							],
+							"name": "Deposited",
+							"type": "event"
+						},
+						{
+							"anonymous": false,
+							"inputs": [
+								{
+									"indexed": true,
+									"internalType": "address",
+									"name": "actor",
+									"type": "address"
+								},
+								{
+									"indexed": false,
+									"internalType": "bytes32",
+									"name": "callId",
+									"type": "bytes32"
+								},
+								{
+									"components": [
+										{
+											"internalType": "address",
+											"name": "to",
+											"type": "address"
+										},
+										{
+											"internalType": "uint256",
+											"name": "value",
+											"type": "uint256"
+										},
+										{
+											"internalType": "bytes",
+											"name": "data",
+											"type": "bytes"
+										}
+									],
+									"indexed": false,
+									"internalType": "struct IDAO.Action[]",
+									"name": "actions",
+									"type": "tuple[]"
+								},
+								{
+									"indexed": false,
+									"internalType": "uint256",
+									"name": "failureMap",
+									"type": "uint256"
+								},
+								{
+									"indexed": false,
+									"internalType": "bytes[]",
+									"name": "execResults",
+									"type": "bytes[]"
+								}
+							],
+							"name": "Executed",
+							"type": "event"
+						},
+						{
+							"anonymous": false,
+							"inputs": [
+								{
+									"indexed": false,
+									"internalType": "bytes",
+									"name": "metadata",
+									"type": "bytes"
+								}
+							],
+							"name": "MetadataSet",
+							"type": "event"
+						},
+						{
+							"anonymous": false,
+							"inputs": [
+								{
+									"indexed": false,
+									"internalType": "address",
+									"name": "sender",
+									"type": "address"
+								},
+								{
+									"indexed": false,
+									"internalType": "uint256",
+									"name": "amount",
+									"type": "uint256"
+								}
+							],
+							"name": "NativeTokenDeposited",
+							"type": "event"
+						},
+						{
+							"anonymous": false,
+							"inputs": [
+								{
+									"indexed": false,
+									"internalType": "address",
+									"name": "signatureValidator",
+									"type": "address"
+								}
+							],
+							"name": "SignatureValidatorSet",
+							"type": "event"
+						},
+						{
+							"anonymous": false,
+							"inputs": [
+								{
+									"indexed": false,
+									"internalType": "bytes4",
+									"name": "interfaceId",
+									"type": "bytes4"
+								},
+								{
+									"indexed": false,
+									"internalType": "bytes4",
+									"name": "callbackSelector",
+									"type": "bytes4"
+								},
+								{
+									"indexed": false,
+									"internalType": "bytes4",
+									"name": "magicNumber",
+									"type": "bytes4"
+								}
+							],
+							"name": "StandardCallbackRegistered",
+							"type": "event"
+						},
+						{
+							"anonymous": false,
+							"inputs": [
+								{
+									"indexed": false,
+									"internalType": "address",
+									"name": "forwarder",
+									"type": "address"
+								}
+							],
+							"name": "TrustedForwarderSet",
+							"type": "event"
+						},
+						{
+							"inputs": [
+								{
+									"internalType": "address",
+									"name": "_token",
+									"type": "address"
+								},
+								{
+									"internalType": "uint256",
+									"name": "_amount",
+									"type": "uint256"
+								},
+								{
+									"internalType": "string",
+									"name": "_reference",
+									"type": "string"
+								}
+							],
+							"name": "deposit",
+							"outputs": [],
+							"stateMutability": "payable",
+							"type": "function"
+						},
+						{
+							"inputs": [
+								{
+									"internalType": "bytes32",
+									"name": "_callId",
+									"type": "bytes32"
+								},
+								{
+									"components": [
+										{
+											"internalType": "address",
+											"name": "to",
+											"type": "address"
+										},
+										{
+											"internalType": "uint256",
+											"name": "value",
+											"type": "uint256"
+										},
+										{
+											"internalType": "bytes",
+											"name": "data",
+											"type": "bytes"
+										}
+									],
+									"internalType": "struct IDAO.Action[]",
+									"name": "_actions",
+									"type": "tuple[]"
+								},
+								{
+									"internalType": "uint256",
+									"name": "_allowFailureMap",
+									"type": "uint256"
+								}
+							],
+							"name": "execute",
+							"outputs": [
+								{
+									"internalType": "bytes[]",
+									"name": "",
+									"type": "bytes[]"
+								},
+								{
+									"internalType": "uint256",
+									"name": "",
+									"type": "uint256"
+								}
+							],
+							"stateMutability": "nonpayable",
+							"type": "function"
+						},
+						{
+							"inputs": [],
+							"name": "getTrustedForwarder",
+							"outputs": [
+								{
+									"internalType": "address",
+									"name": "",
+									"type": "address"
+								}
+							],
+							"stateMutability": "view",
+							"type": "function"
+						},
+						{
+							"inputs": [
+								{
+									"internalType": "address",
+									"name": "_where",
+									"type": "address"
+								},
+								{
+									"internalType": "address",
+									"name": "_who",
+									"type": "address"
+								},
+								{
+									"internalType": "bytes32",
+									"name": "_permissionId",
+									"type": "bytes32"
+								},
+								{
+									"internalType": "bytes",
+									"name": "_data",
+									"type": "bytes"
+								}
+							],
+							"name": "hasPermission",
+							"outputs": [
+								{
+									"internalType": "bool",
+									"name": "",
+									"type": "bool"
+								}
+							],
+							"stateMutability": "view",
+							"type": "function"
+						},
+						{
+							"inputs": [
+								{
+									"internalType": "bytes32",
+									"name": "_hash",
+									"type": "bytes32"
+								},
+								{
+									"internalType": "bytes",
+									"name": "_signature",
+									"type": "bytes"
+								}
+							],
+							"name": "isValidSignature",
+							"outputs": [
+								{
+									"internalType": "bytes4",
+									"name": "",
+									"type": "bytes4"
+								}
+							],
+							"stateMutability": "nonpayable",
+							"type": "function"
+						},
+						{
+							"inputs": [
+								{
+									"internalType": "bytes4",
+									"name": "_interfaceId",
+									"type": "bytes4"
+								},
+								{
+									"internalType": "bytes4",
+									"name": "_callbackSelector",
+									"type": "bytes4"
+								},
+								{
+									"internalType": "bytes4",
+									"name": "_magicNumber",
+									"type": "bytes4"
+								}
+							],
+							"name": "registerStandardCallback",
+							"outputs": [],
+							"stateMutability": "nonpayable",
+							"type": "function"
+						},
+						{
+							"inputs": [
+								{
+									"internalType": "bytes",
+									"name": "_metadata",
+									"type": "bytes"
+								}
+							],
+							"name": "setMetadata",
+							"outputs": [],
+							"stateMutability": "nonpayable",
+							"type": "function"
+						},
+						{
+							"inputs": [
+								{
+									"internalType": "address",
+									"name": "_signatureValidator",
+									"type": "address"
+								}
+							],
+							"name": "setSignatureValidator",
+							"outputs": [],
+							"stateMutability": "nonpayable",
+							"type": "function"
+						},
+						{
+							"inputs": [
+								{
+									"internalType": "address",
+									"name": "_trustedForwarder",
+									"type": "address"
+								}
+							],
+							"name": "setTrustedForwarder",
+							"outputs": [],
+							"stateMutability": "nonpayable",
+							"type": "function"
+						}
+					],
+					"devdoc": {
+						"author": "Aragon Association - 2022-2023",
+						"events": {
+							"Deposited(address,address,uint256,string)": {
+								"params": {
+									"_reference": "The reference describing the deposit reason.",
+									"amount": "The amount of tokens deposited.",
+									"sender": "The address of the sender.",
+									"token": "The address of the deposited token."
+								}
+							},
+							"Executed(address,bytes32,(address,uint256,bytes)[],uint256,bytes[])": {
+								"details": "The value of `callId` is defined by the component/contract calling the execute function. A `Plugin` implementation can use it, for example, as a nonce.",
+								"params": {
+									"actions": "The array of actions executed.",
+									"actor": "The address of the caller.",
+									"callId": "The ID of the call.",
+									"execResults": "The array with the results of the executed actions.",
+									"failureMap": "The failure map encoding which actions have failed."
+								}
+							},
+							"MetadataSet(bytes)": {
+								"params": {
+									"metadata": "The IPFS hash of the new metadata object."
+								}
+							},
+							"NativeTokenDeposited(address,uint256)": {
+								"details": "This event is intended to be emitted in the `receive` function and is therefore bound by the gas limitations for `send`/`transfer` calls introduced by [ERC-2929](https://eips.ethereum.org/EIPS/eip-2929).",
+								"params": {
+									"amount": "The amount of native tokens deposited.",
+									"sender": "The address of the sender."
+								}
+							},
+							"SignatureValidatorSet(address)": {
+								"params": {
+									"signatureValidator": "The address of the signature validator."
+								}
+							},
+							"StandardCallbackRegistered(bytes4,bytes4,bytes4)": {
+								"params": {
+									"callbackSelector": "The selector of the callback function.",
+									"interfaceId": "The ID of the interface.",
+									"magicNumber": "The magic number to be registered for the callback function selector."
+								}
+							},
+							"TrustedForwarderSet(address)": {
+								"params": {
+									"forwarder": "the new forwarder address."
+								}
+							}
+						},
+						"kind": "dev",
+						"methods": {
+							"deposit(address,uint256,string)": {
+								"params": {
+									"_amount": "The amount of tokens to deposit.",
+									"_reference": "The reference describing the deposit reason.",
+									"_token": "The address of the token or address(0) in case of the native token."
+								}
+							},
+							"execute(bytes32,(address,uint256,bytes)[],uint256)": {
+								"params": {
+									"_actions": "The array of actions.",
+									"_allowFailureMap": "A bitmap allowing execution to succeed, even if individual actions might revert. If the bit at index `i` is 1, the execution succeeds even if the `i`th action reverts. A failure map value of 0 requires every action to not revert.",
+									"_callId": "The ID of the call. The definition of the value of `callId` is up to the calling contract and can be used, e.g., as a nonce."
+								},
+								"returns": {
+									"_0": "The array of results obtained from the executed actions in `bytes`.",
+									"_1": "The resulting failure map containing the actions have actually failed."
+								}
+							},
+							"getTrustedForwarder()": {
+								"returns": {
+									"_0": "The trusted forwarder address."
+								}
+							},
+							"hasPermission(address,address,bytes32,bytes)": {
+								"params": {
+									"_data": "The optional data passed to the `PermissionCondition` registered.",
+									"_permissionId": "The permission identifier.",
+									"_where": "The address of the contract.",
+									"_who": "The address of a EOA or contract to give the permissions."
+								},
+								"returns": {
+									"_0": "Returns true if the address has permission, false if not."
+								}
+							},
+							"isValidSignature(bytes32,bytes)": {
+								"params": {
+									"_hash": "The hash of the data to be signed.",
+									"_signature": "The signature byte array associated with `_hash`."
+								},
+								"returns": {
+									"_0": "Returns the `bytes4` magic value `0x1626ba7e` if the signature is valid."
+								}
+							},
+							"registerStandardCallback(bytes4,bytes4,bytes4)": {
+								"params": {
+									"_callbackSelector": "The selector of the callback function.",
+									"_interfaceId": "The ID of the interface.",
+									"_magicNumber": "The magic number to be registered for the function signature."
+								}
+							},
+							"setMetadata(bytes)": {
+								"params": {
+									"_metadata": "The IPFS hash of the new metadata object."
+								}
+							},
+							"setSignatureValidator(address)": {
+								"params": {
+									"_signatureValidator": "The address of the signature validator."
+								}
+							},
+							"setTrustedForwarder(address)": {
+								"params": {
+									"_trustedForwarder": "The trusted forwarder address."
+								}
+							}
+						},
+						"title": "IDAO",
+						"version": 1
+					},
+					"evm": {
+						"assembly": "",
+						"bytecode": {
+							"functionDebugData": {},
+							"generatedSources": [],
+							"linkReferences": {},
+							"object": "",
+							"opcodes": "",
+							"sourceMap": ""
+						},
+						"deployedBytecode": {
+							"functionDebugData": {},
+							"generatedSources": [],
+							"immutableReferences": {},
+							"linkReferences": {},
+							"object": "",
+							"opcodes": "",
+							"sourceMap": ""
+						},
+						"gasEstimates": null,
+						"legacyAssembly": null,
+						"methodIdentifiers": {
+							"deposit(address,uint256,string)": "bfe07da6",
+							"execute(bytes32,(address,uint256,bytes)[],uint256)": "c71bf324",
+							"getTrustedForwarder()": "ce1b815f",
+							"hasPermission(address,address,bytes32,bytes)": "fdef9106",
+							"isValidSignature(bytes32,bytes)": "1626ba7e",
+							"registerStandardCallback(bytes4,bytes4,bytes4)": "c4a50145",
+							"setMetadata(bytes)": "ee57e36f",
+							"setSignatureValidator(address)": "3e2ab0d9",
+							"setTrustedForwarder(address)": "da742228"
+						}
+					},
+					"metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"_reference\",\"type\":\"string\"}],\"name\":\"Deposited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"actor\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"callId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"indexed\":false,\"internalType\":\"struct IDAO.Action[]\",\"name\":\"actions\",\"type\":\"tuple[]\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"failureMap\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes[]\",\"name\":\"execResults\",\"type\":\"bytes[]\"}],\"name\":\"Executed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"metadata\",\"type\":\"bytes\"}],\"name\":\"MetadataSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"NativeTokenDeposited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"signatureValidator\",\"type\":\"address\"}],\"name\":\"SignatureValidatorSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"},{\"indexed\":false,\"internalType\":\"bytes4\",\"name\":\"callbackSelector\",\"type\":\"bytes4\"},{\"indexed\":false,\"internalType\":\"bytes4\",\"name\":\"magicNumber\",\"type\":\"bytes4\"}],\"name\":\"StandardCallbackRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"forwarder\",\"type\":\"address\"}],\"name\":\"TrustedForwarderSet\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_reference\",\"type\":\"string\"}],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_callId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"struct IDAO.Action[]\",\"name\":\"_actions\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"_allowFailureMap\",\"type\":\"uint256\"}],\"name\":\"execute\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTrustedForwarder\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_where\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_who\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"_permissionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"hasPermission\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"_interfaceId\",\"type\":\"bytes4\"},{\"internalType\":\"bytes4\",\"name\":\"_callbackSelector\",\"type\":\"bytes4\"},{\"internalType\":\"bytes4\",\"name\":\"_magicNumber\",\"type\":\"bytes4\"}],\"name\":\"registerStandardCallback\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_metadata\",\"type\":\"bytes\"}],\"name\":\"setMetadata\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_signatureValidator\",\"type\":\"address\"}],\"name\":\"setSignatureValidator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_trustedForwarder\",\"type\":\"address\"}],\"name\":\"setTrustedForwarder\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Aragon Association - 2022-2023\",\"events\":{\"Deposited(address,address,uint256,string)\":{\"params\":{\"_reference\":\"The reference describing the deposit reason.\",\"amount\":\"The amount of tokens deposited.\",\"sender\":\"The address of the sender.\",\"token\":\"The address of the deposited token.\"}},\"Executed(address,bytes32,(address,uint256,bytes)[],uint256,bytes[])\":{\"details\":\"The value of `callId` is defined by the component/contract calling the execute function. A `Plugin` implementation can use it, for example, as a nonce.\",\"params\":{\"actions\":\"The array of actions executed.\",\"actor\":\"The address of the caller.\",\"callId\":\"The ID of the call.\",\"execResults\":\"The array with the results of the executed actions.\",\"failureMap\":\"The failure map encoding which actions have failed.\"}},\"MetadataSet(bytes)\":{\"params\":{\"metadata\":\"The IPFS hash of the new metadata object.\"}},\"NativeTokenDeposited(address,uint256)\":{\"details\":\"This event is intended to be emitted in the `receive` function and is therefore bound by the gas limitations for `send`/`transfer` calls introduced by [ERC-2929](https://eips.ethereum.org/EIPS/eip-2929).\",\"params\":{\"amount\":\"The amount of native tokens deposited.\",\"sender\":\"The address of the sender.\"}},\"SignatureValidatorSet(address)\":{\"params\":{\"signatureValidator\":\"The address of the signature validator.\"}},\"StandardCallbackRegistered(bytes4,bytes4,bytes4)\":{\"params\":{\"callbackSelector\":\"The selector of the callback function.\",\"interfaceId\":\"The ID of the interface.\",\"magicNumber\":\"The magic number to be registered for the callback function selector.\"}},\"TrustedForwarderSet(address)\":{\"params\":{\"forwarder\":\"the new forwarder address.\"}}},\"kind\":\"dev\",\"methods\":{\"deposit(address,uint256,string)\":{\"params\":{\"_amount\":\"The amount of tokens to deposit.\",\"_reference\":\"The reference describing the deposit reason.\",\"_token\":\"The address of the token or address(0) in case of the native token.\"}},\"execute(bytes32,(address,uint256,bytes)[],uint256)\":{\"params\":{\"_actions\":\"The array of actions.\",\"_allowFailureMap\":\"A bitmap allowing execution to succeed, even if individual actions might revert. If the bit at index `i` is 1, the execution succeeds even if the `i`th action reverts. A failure map value of 0 requires every action to not revert.\",\"_callId\":\"The ID of the call. The definition of the value of `callId` is up to the calling contract and can be used, e.g., as a nonce.\"},\"returns\":{\"_0\":\"The array of results obtained from the executed actions in `bytes`.\",\"_1\":\"The resulting failure map containing the actions have actually failed.\"}},\"getTrustedForwarder()\":{\"returns\":{\"_0\":\"The trusted forwarder address.\"}},\"hasPermission(address,address,bytes32,bytes)\":{\"params\":{\"_data\":\"The optional data passed to the `PermissionCondition` registered.\",\"_permissionId\":\"The permission identifier.\",\"_where\":\"The address of the contract.\",\"_who\":\"The address of a EOA or contract to give the permissions.\"},\"returns\":{\"_0\":\"Returns true if the address has permission, false if not.\"}},\"isValidSignature(bytes32,bytes)\":{\"params\":{\"_hash\":\"The hash of the data to be signed.\",\"_signature\":\"The signature byte array associated with `_hash`.\"},\"returns\":{\"_0\":\"Returns the `bytes4` magic value `0x1626ba7e` if the signature is valid.\"}},\"registerStandardCallback(bytes4,bytes4,bytes4)\":{\"params\":{\"_callbackSelector\":\"The selector of the callback function.\",\"_interfaceId\":\"The ID of the interface.\",\"_magicNumber\":\"The magic number to be registered for the function signature.\"}},\"setMetadata(bytes)\":{\"params\":{\"_metadata\":\"The IPFS hash of the new metadata object.\"}},\"setSignatureValidator(address)\":{\"params\":{\"_signatureValidator\":\"The address of the signature validator.\"}},\"setTrustedForwarder(address)\":{\"params\":{\"_trustedForwarder\":\"The trusted forwarder address.\"}}},\"title\":\"IDAO\",\"version\":1},\"userdoc\":{\"events\":{\"Deposited(address,address,uint256,string)\":{\"notice\":\"Emitted when a token deposit has been made to the DAO.\"},\"Executed(address,bytes32,(address,uint256,bytes)[],uint256,bytes[])\":{\"notice\":\"Emitted when a proposal is executed.\"},\"MetadataSet(bytes)\":{\"notice\":\"Emitted when the DAO metadata is updated.\"},\"NativeTokenDeposited(address,uint256)\":{\"notice\":\"Emitted when a native token deposit has been made to the DAO.\"},\"SignatureValidatorSet(address)\":{\"notice\":\"Emitted when the signature validator address is updated.\"},\"StandardCallbackRegistered(bytes4,bytes4,bytes4)\":{\"notice\":\"Emitted when a standard callback is registered.\"},\"TrustedForwarderSet(address)\":{\"notice\":\"Emitted when a new TrustedForwarder is set on the DAO.\"}},\"kind\":\"user\",\"methods\":{\"deposit(address,uint256,string)\":{\"notice\":\"Deposits (native) tokens to the DAO contract with a reference string.\"},\"execute(bytes32,(address,uint256,bytes)[],uint256)\":{\"notice\":\"Executes a list of actions. If a zero allow-failure map is provided, a failing action reverts the entire excution. If a non-zero allow-failure map is provided, allowed actions can fail without the entire call being reverted.\"},\"getTrustedForwarder()\":{\"notice\":\"Getter for the trusted forwarder verifying the meta transaction.\"},\"hasPermission(address,address,bytes32,bytes)\":{\"notice\":\"Checks if an address has permission on a contract via a permission identifier and considers if `ANY_ADDRESS` was used in the granting process.\"},\"isValidSignature(bytes32,bytes)\":{\"notice\":\"Checks whether a signature is valid for the provided hash by forwarding the call to the set [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) signature validator contract.\"},\"registerStandardCallback(bytes4,bytes4,bytes4)\":{\"notice\":\"Registers an ERC standard having a callback by registering its [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID and callback function signature.\"},\"setMetadata(bytes)\":{\"notice\":\"Updates the DAO metadata (e.g., an IPFS hash).\"},\"setSignatureValidator(address)\":{\"notice\":\"Setter for the [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) signature validator contract.\"},\"setTrustedForwarder(address)\":{\"notice\":\"Setter for the trusted forwarder verifying the meta transaction.\"}},\"notice\":\"The interface required for DAOs within the Aragon App DAO framework.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/IDAO.sol\":\"IDAO\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/IDAO.sol\":{\"keccak256\":\"0x2976b1b3c51085558bff94cd8bd503cf51e0093bb9324b54efff5d503f246d6f\",\"license\":\"AGPL-3.0-or-later\",\"urls\":[\"bzz-raw://1600c2640bba98795eb053384ad76cff1741355a43e238f65e6700f8cb2f0a39\",\"dweb:/ipfs/QmUKBuweXt92TUJGzzycZXaUCMrsr7z3nn2yvQDLPfwQJr\"]}},\"version\":1}",
+					"storageLayout": {
+						"storage": [],
+						"types": null
+					},
+					"userdoc": {
+						"events": {
+							"Deposited(address,address,uint256,string)": {
+								"notice": "Emitted when a token deposit has been made to the DAO."
+							},
+							"Executed(address,bytes32,(address,uint256,bytes)[],uint256,bytes[])": {
+								"notice": "Emitted when a proposal is executed."
+							},
+							"MetadataSet(bytes)": {
+								"notice": "Emitted when the DAO metadata is updated."
+							},
+							"NativeTokenDeposited(address,uint256)": {
+								"notice": "Emitted when a native token deposit has been made to the DAO."
+							},
+							"SignatureValidatorSet(address)": {
+								"notice": "Emitted when the signature validator address is updated."
+							},
+							"StandardCallbackRegistered(bytes4,bytes4,bytes4)": {
+								"notice": "Emitted when a standard callback is registered."
+							},
+							"TrustedForwarderSet(address)": {
+								"notice": "Emitted when a new TrustedForwarder is set on the DAO."
+							}
+						},
+						"kind": "user",
+						"methods": {
+							"deposit(address,uint256,string)": {
+								"notice": "Deposits (native) tokens to the DAO contract with a reference string."
+							},
+							"execute(bytes32,(address,uint256,bytes)[],uint256)": {
+								"notice": "Executes a list of actions. If a zero allow-failure map is provided, a failing action reverts the entire excution. If a non-zero allow-failure map is provided, allowed actions can fail without the entire call being reverted."
+							},
+							"getTrustedForwarder()": {
+								"notice": "Getter for the trusted forwarder verifying the meta transaction."
+							},
+							"hasPermission(address,address,bytes32,bytes)": {
+								"notice": "Checks if an address has permission on a contract via a permission identifier and considers if `ANY_ADDRESS` was used in the granting process."
+							},
+							"isValidSignature(bytes32,bytes)": {
+								"notice": "Checks whether a signature is valid for the provided hash by forwarding the call to the set [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) signature validator contract."
+							},
+							"registerStandardCallback(bytes4,bytes4,bytes4)": {
+								"notice": "Registers an ERC standard having a callback by registering its [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID and callback function signature."
+							},
+							"setMetadata(bytes)": {
+								"notice": "Updates the DAO metadata (e.g., an IPFS hash)."
+							},
+							"setSignatureValidator(address)": {
+								"notice": "Setter for the [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) signature validator contract."
+							},
+							"setTrustedForwarder(address)": {
+								"notice": "Setter for the trusted forwarder verifying the meta transaction."
+							}
+						},
+						"notice": "The interface required for DAOs within the Aragon App DAO framework.",
+						"version": 1
+					}
+				}
+			}
+		},
+		"sources": {
+			"contracts/IDAO.sol": {
+				"ast": {
+					"absolutePath": "contracts/IDAO.sol",
+					"exportedSymbols": {
+						"IDAO": [
+							153
+						]
+					},
+					"id": 154,
+					"license": "AGPL-3.0-or-later",
+					"nodeType": "SourceUnit",
+					"nodes": [
+						{
+							"id": 1,
+							"literals": [
+								"solidity",
+								"^",
+								"0.8",
+								".17"
+							],
+							"nodeType": "PragmaDirective",
+							"src": "49:24:0"
+						},
+						{
+							"abstract": false,
+							"baseContracts": [],
+							"canonicalName": "IDAO",
+							"contractDependencies": [],
+							"contractKind": "interface",
+							"documentation": {
+								"id": 2,
+								"nodeType": "StructuredDocumentation",
+								"src": "77:143:0",
+								"text": "@title IDAO\n @author Aragon Association - 2022-2023\n @notice The interface required for DAOs within the Aragon App DAO framework."
+							},
+							"fullyImplemented": false,
+							"id": 153,
+							"linearizedBaseContracts": [
+								153
+							],
+							"name": "IDAO",
+							"nameLocation": "230:4:0",
+							"nodeType": "ContractDefinition",
+							"nodes": [
+								{
+									"canonicalName": "IDAO.Action",
+									"id": 9,
+									"members": [
+										{
+											"constant": false,
+											"id": 4,
+											"mutability": "mutable",
+											"name": "to",
+											"nameLocation": "583:2:0",
+											"nodeType": "VariableDeclaration",
+											"scope": 9,
+											"src": "575:10:0",
+											"stateVariable": false,
+											"storageLocation": "default",
+											"typeDescriptions": {
+												"typeIdentifier": "t_address",
+												"typeString": "address"
+											},
+											"typeName": {
+												"id": 3,
+												"name": "address",
+												"nodeType": "ElementaryTypeName",
+												"src": "575:7:0",
+												"stateMutability": "nonpayable",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												}
+											},
+											"visibility": "internal"
+										},
+										{
+											"constant": false,
+											"id": 6,
+											"mutability": "mutable",
+											"name": "value",
+											"nameLocation": "604:5:0",
+											"nodeType": "VariableDeclaration",
+											"scope": 9,
+											"src": "596:13:0",
+											"stateVariable": false,
+											"storageLocation": "default",
+											"typeDescriptions": {
+												"typeIdentifier": "t_uint256",
+												"typeString": "uint256"
+											},
+											"typeName": {
+												"id": 5,
+												"name": "uint256",
+												"nodeType": "ElementaryTypeName",
+												"src": "596:7:0",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												}
+											},
+											"visibility": "internal"
+										},
+										{
+											"constant": false,
+											"id": 8,
+											"mutability": "mutable",
+											"name": "data",
+											"nameLocation": "626:4:0",
+											"nodeType": "VariableDeclaration",
+											"scope": 9,
+											"src": "620:10:0",
+											"stateVariable": false,
+											"storageLocation": "default",
+											"typeDescriptions": {
+												"typeIdentifier": "t_bytes_storage_ptr",
+												"typeString": "bytes"
+											},
+											"typeName": {
+												"id": 7,
+												"name": "bytes",
+												"nodeType": "ElementaryTypeName",
+												"src": "620:5:0",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes_storage_ptr",
+													"typeString": "bytes"
+												}
+											},
+											"visibility": "internal"
+										}
+									],
+									"name": "Action",
+									"nameLocation": "557:6:0",
+									"nodeType": "StructDefinition",
+									"scope": 153,
+									"src": "550:88:0",
+									"visibility": "public"
+								},
+								{
+									"documentation": {
+										"id": 10,
+										"nodeType": "StructuredDocumentation",
+										"src": "646:505:0",
+										"text": "@notice Checks if an address has permission on a contract via a permission identifier and considers if `ANY_ADDRESS` was used in the granting process.\n @param _where The address of the contract.\n @param _who The address of a EOA or contract to give the permissions.\n @param _permissionId The permission identifier.\n @param _data The optional data passed to the `PermissionCondition` registered.\n @return Returns true if the address has permission, false if not."
+									},
+									"functionSelector": "fdef9106",
+									"id": 23,
+									"implemented": false,
+									"kind": "function",
+									"modifiers": [],
+									"name": "hasPermission",
+									"nameLocation": "1166:13:0",
+									"nodeType": "FunctionDefinition",
+									"parameters": {
+										"id": 19,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 12,
+												"mutability": "mutable",
+												"name": "_where",
+												"nameLocation": "1198:6:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 23,
+												"src": "1190:14:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 11,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "1190:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 14,
+												"mutability": "mutable",
+												"name": "_who",
+												"nameLocation": "1223:4:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 23,
+												"src": "1215:12:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 13,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "1215:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 16,
+												"mutability": "mutable",
+												"name": "_permissionId",
+												"nameLocation": "1246:13:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 23,
+												"src": "1238:21:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes32",
+													"typeString": "bytes32"
+												},
+												"typeName": {
+													"id": 15,
+													"name": "bytes32",
+													"nodeType": "ElementaryTypeName",
+													"src": "1238:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes32",
+														"typeString": "bytes32"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 18,
+												"mutability": "mutable",
+												"name": "_data",
+												"nameLocation": "1283:5:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 23,
+												"src": "1270:18:0",
+												"stateVariable": false,
+												"storageLocation": "memory",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes_memory_ptr",
+													"typeString": "bytes"
+												},
+												"typeName": {
+													"id": 17,
+													"name": "bytes",
+													"nodeType": "ElementaryTypeName",
+													"src": "1270:5:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes_storage_ptr",
+														"typeString": "bytes"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "1179:116:0"
+									},
+									"returnParameters": {
+										"id": 22,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 21,
+												"mutability": "mutable",
+												"name": "",
+												"nameLocation": "-1:-1:-1",
+												"nodeType": "VariableDeclaration",
+												"scope": 23,
+												"src": "1319:4:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bool",
+													"typeString": "bool"
+												},
+												"typeName": {
+													"id": 20,
+													"name": "bool",
+													"nodeType": "ElementaryTypeName",
+													"src": "1319:4:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bool",
+														"typeString": "bool"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "1318:6:0"
+									},
+									"scope": 153,
+									"src": "1157:168:0",
+									"stateMutability": "view",
+									"virtual": false,
+									"visibility": "external"
+								},
+								{
+									"documentation": {
+										"id": 24,
+										"nodeType": "StructuredDocumentation",
+										"src": "1333:126:0",
+										"text": "@notice Updates the DAO metadata (e.g., an IPFS hash).\n @param _metadata The IPFS hash of the new metadata object."
+									},
+									"functionSelector": "ee57e36f",
+									"id": 29,
+									"implemented": false,
+									"kind": "function",
+									"modifiers": [],
+									"name": "setMetadata",
+									"nameLocation": "1474:11:0",
+									"nodeType": "FunctionDefinition",
+									"parameters": {
+										"id": 27,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 26,
+												"mutability": "mutable",
+												"name": "_metadata",
+												"nameLocation": "1501:9:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 29,
+												"src": "1486:24:0",
+												"stateVariable": false,
+												"storageLocation": "calldata",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes_calldata_ptr",
+													"typeString": "bytes"
+												},
+												"typeName": {
+													"id": 25,
+													"name": "bytes",
+													"nodeType": "ElementaryTypeName",
+													"src": "1486:5:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes_storage_ptr",
+														"typeString": "bytes"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "1485:26:0"
+									},
+									"returnParameters": {
+										"id": 28,
+										"nodeType": "ParameterList",
+										"parameters": [],
+										"src": "1520:0:0"
+									},
+									"scope": 153,
+									"src": "1465:56:0",
+									"stateMutability": "nonpayable",
+									"virtual": false,
+									"visibility": "external"
+								},
+								{
+									"anonymous": false,
+									"documentation": {
+										"id": 30,
+										"nodeType": "StructuredDocumentation",
+										"src": "1529:120:0",
+										"text": "@notice Emitted when the DAO metadata is updated.\n @param metadata The IPFS hash of the new metadata object."
+									},
+									"eventSelector": "bb39ebb37e60fb5d606ffdb749d2336e56b88e6c88c4bd6513b308f643186eed",
+									"id": 34,
+									"name": "MetadataSet",
+									"nameLocation": "1661:11:0",
+									"nodeType": "EventDefinition",
+									"parameters": {
+										"id": 33,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 32,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "metadata",
+												"nameLocation": "1679:8:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 34,
+												"src": "1673:14:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes_memory_ptr",
+													"typeString": "bytes"
+												},
+												"typeName": {
+													"id": 31,
+													"name": "bytes",
+													"nodeType": "ElementaryTypeName",
+													"src": "1673:5:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes_storage_ptr",
+														"typeString": "bytes"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "1672:16:0"
+									},
+									"src": "1655:34:0"
+								},
+								{
+									"documentation": {
+										"id": 35,
+										"nodeType": "StructuredDocumentation",
+										"src": "1697:868:0",
+										"text": "@notice Executes a list of actions. If a zero allow-failure map is provided, a failing action reverts the entire excution. If a non-zero allow-failure map is provided, allowed actions can fail without the entire call being reverted.\n @param _callId The ID of the call. The definition of the value of `callId` is up to the calling contract and can be used, e.g., as a nonce.\n @param _actions The array of actions.\n @param _allowFailureMap A bitmap allowing execution to succeed, even if individual actions might revert. If the bit at index `i` is 1, the execution succeeds even if the `i`th action reverts. A failure map value of 0 requires every action to not revert.\n @return The array of results obtained from the executed actions in `bytes`.\n @return The resulting failure map containing the actions have actually failed."
+									},
+									"functionSelector": "c71bf324",
+									"id": 51,
+									"implemented": false,
+									"kind": "function",
+									"modifiers": [],
+									"name": "execute",
+									"nameLocation": "2580:7:0",
+									"nodeType": "FunctionDefinition",
+									"parameters": {
+										"id": 44,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 37,
+												"mutability": "mutable",
+												"name": "_callId",
+												"nameLocation": "2606:7:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 51,
+												"src": "2598:15:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes32",
+													"typeString": "bytes32"
+												},
+												"typeName": {
+													"id": 36,
+													"name": "bytes32",
+													"nodeType": "ElementaryTypeName",
+													"src": "2598:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes32",
+														"typeString": "bytes32"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 41,
+												"mutability": "mutable",
+												"name": "_actions",
+												"nameLocation": "2640:8:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 51,
+												"src": "2624:24:0",
+												"stateVariable": false,
+												"storageLocation": "memory",
+												"typeDescriptions": {
+													"typeIdentifier": "t_array$_t_struct$_Action_$9_memory_ptr_$dyn_memory_ptr",
+													"typeString": "struct IDAO.Action[]"
+												},
+												"typeName": {
+													"baseType": {
+														"id": 39,
+														"nodeType": "UserDefinedTypeName",
+														"pathNode": {
+															"id": 38,
+															"name": "Action",
+															"nameLocations": [
+																"2624:6:0"
+															],
+															"nodeType": "IdentifierPath",
+															"referencedDeclaration": 9,
+															"src": "2624:6:0"
+														},
+														"referencedDeclaration": 9,
+														"src": "2624:6:0",
+														"typeDescriptions": {
+															"typeIdentifier": "t_struct$_Action_$9_storage_ptr",
+															"typeString": "struct IDAO.Action"
+														}
+													},
+													"id": 40,
+													"nodeType": "ArrayTypeName",
+													"src": "2624:8:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_array$_t_struct$_Action_$9_storage_$dyn_storage_ptr",
+														"typeString": "struct IDAO.Action[]"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 43,
+												"mutability": "mutable",
+												"name": "_allowFailureMap",
+												"nameLocation": "2667:16:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 51,
+												"src": "2659:24:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												},
+												"typeName": {
+													"id": 42,
+													"name": "uint256",
+													"nodeType": "ElementaryTypeName",
+													"src": "2659:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_uint256",
+														"typeString": "uint256"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "2587:103:0"
+									},
+									"returnParameters": {
+										"id": 50,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 47,
+												"mutability": "mutable",
+												"name": "",
+												"nameLocation": "-1:-1:-1",
+												"nodeType": "VariableDeclaration",
+												"scope": 51,
+												"src": "2709:14:0",
+												"stateVariable": false,
+												"storageLocation": "memory",
+												"typeDescriptions": {
+													"typeIdentifier": "t_array$_t_bytes_memory_ptr_$dyn_memory_ptr",
+													"typeString": "bytes[]"
+												},
+												"typeName": {
+													"baseType": {
+														"id": 45,
+														"name": "bytes",
+														"nodeType": "ElementaryTypeName",
+														"src": "2709:5:0",
+														"typeDescriptions": {
+															"typeIdentifier": "t_bytes_storage_ptr",
+															"typeString": "bytes"
+														}
+													},
+													"id": 46,
+													"nodeType": "ArrayTypeName",
+													"src": "2709:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_array$_t_bytes_storage_$dyn_storage_ptr",
+														"typeString": "bytes[]"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 49,
+												"mutability": "mutable",
+												"name": "",
+												"nameLocation": "-1:-1:-1",
+												"nodeType": "VariableDeclaration",
+												"scope": 51,
+												"src": "2725:7:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												},
+												"typeName": {
+													"id": 48,
+													"name": "uint256",
+													"nodeType": "ElementaryTypeName",
+													"src": "2725:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_uint256",
+														"typeString": "uint256"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "2708:25:0"
+									},
+									"scope": 153,
+									"src": "2571:163:0",
+									"stateMutability": "nonpayable",
+									"virtual": false,
+									"visibility": "external"
+								},
+								{
+									"anonymous": false,
+									"documentation": {
+										"id": 52,
+										"nodeType": "StructuredDocumentation",
+										"src": "2742:520:0",
+										"text": "@notice Emitted when a proposal is executed.\n @param actor The address of the caller.\n @param callId The ID of the call.\n @param actions The array of actions executed.\n @param failureMap The failure map encoding which actions have failed.\n @param execResults The array with the results of the executed actions.\n @dev The value of `callId` is defined by the component/contract calling the execute function. A `Plugin` implementation can use it, for example, as a nonce."
+									},
+									"eventSelector": "d0de18eab8dc7532aab0fc4eb308477031cabf9fd312ea3b3a5fe9aa45ac8ed7",
+									"id": 67,
+									"name": "Executed",
+									"nameLocation": "3274:8:0",
+									"nodeType": "EventDefinition",
+									"parameters": {
+										"id": 66,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 54,
+												"indexed": true,
+												"mutability": "mutable",
+												"name": "actor",
+												"nameLocation": "3309:5:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 67,
+												"src": "3293:21:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 53,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "3293:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 56,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "callId",
+												"nameLocation": "3333:6:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 67,
+												"src": "3325:14:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes32",
+													"typeString": "bytes32"
+												},
+												"typeName": {
+													"id": 55,
+													"name": "bytes32",
+													"nodeType": "ElementaryTypeName",
+													"src": "3325:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes32",
+														"typeString": "bytes32"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 60,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "actions",
+												"nameLocation": "3359:7:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 67,
+												"src": "3350:16:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_array$_t_struct$_Action_$9_memory_ptr_$dyn_memory_ptr",
+													"typeString": "struct IDAO.Action[]"
+												},
+												"typeName": {
+													"baseType": {
+														"id": 58,
+														"nodeType": "UserDefinedTypeName",
+														"pathNode": {
+															"id": 57,
+															"name": "Action",
+															"nameLocations": [
+																"3350:6:0"
+															],
+															"nodeType": "IdentifierPath",
+															"referencedDeclaration": 9,
+															"src": "3350:6:0"
+														},
+														"referencedDeclaration": 9,
+														"src": "3350:6:0",
+														"typeDescriptions": {
+															"typeIdentifier": "t_struct$_Action_$9_storage_ptr",
+															"typeString": "struct IDAO.Action"
+														}
+													},
+													"id": 59,
+													"nodeType": "ArrayTypeName",
+													"src": "3350:8:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_array$_t_struct$_Action_$9_storage_$dyn_storage_ptr",
+														"typeString": "struct IDAO.Action[]"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 62,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "failureMap",
+												"nameLocation": "3385:10:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 67,
+												"src": "3377:18:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												},
+												"typeName": {
+													"id": 61,
+													"name": "uint256",
+													"nodeType": "ElementaryTypeName",
+													"src": "3377:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_uint256",
+														"typeString": "uint256"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 65,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "execResults",
+												"nameLocation": "3414:11:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 67,
+												"src": "3406:19:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_array$_t_bytes_memory_ptr_$dyn_memory_ptr",
+													"typeString": "bytes[]"
+												},
+												"typeName": {
+													"baseType": {
+														"id": 63,
+														"name": "bytes",
+														"nodeType": "ElementaryTypeName",
+														"src": "3406:5:0",
+														"typeDescriptions": {
+															"typeIdentifier": "t_bytes_storage_ptr",
+															"typeString": "bytes"
+														}
+													},
+													"id": 64,
+													"nodeType": "ArrayTypeName",
+													"src": "3406:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_array$_t_bytes_storage_$dyn_storage_ptr",
+														"typeString": "bytes[]"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "3282:150:0"
+									},
+									"src": "3268:165:0"
+								},
+								{
+									"anonymous": false,
+									"documentation": {
+										"id": 68,
+										"nodeType": "StructuredDocumentation",
+										"src": "3441:282:0",
+										"text": "@notice Emitted when a standard callback is registered.\n @param interfaceId The ID of the interface.\n @param callbackSelector The selector of the callback function.\n @param magicNumber The magic number to be registered for the callback function selector."
+									},
+									"eventSelector": "fc72fd547553f7a663e0048e590afc9c47b56a4242e960f31cf4c62e23d308b9",
+									"id": 76,
+									"name": "StandardCallbackRegistered",
+									"nameLocation": "3735:26:0",
+									"nodeType": "EventDefinition",
+									"parameters": {
+										"id": 75,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 70,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "interfaceId",
+												"nameLocation": "3779:11:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 76,
+												"src": "3772:18:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes4",
+													"typeString": "bytes4"
+												},
+												"typeName": {
+													"id": 69,
+													"name": "bytes4",
+													"nodeType": "ElementaryTypeName",
+													"src": "3772:6:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes4",
+														"typeString": "bytes4"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 72,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "callbackSelector",
+												"nameLocation": "3808:16:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 76,
+												"src": "3801:23:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes4",
+													"typeString": "bytes4"
+												},
+												"typeName": {
+													"id": 71,
+													"name": "bytes4",
+													"nodeType": "ElementaryTypeName",
+													"src": "3801:6:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes4",
+														"typeString": "bytes4"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 74,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "magicNumber",
+												"nameLocation": "3842:11:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 76,
+												"src": "3835:18:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes4",
+													"typeString": "bytes4"
+												},
+												"typeName": {
+													"id": 73,
+													"name": "bytes4",
+													"nodeType": "ElementaryTypeName",
+													"src": "3835:6:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes4",
+														"typeString": "bytes4"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "3761:99:0"
+									},
+									"src": "3729:132:0"
+								},
+								{
+									"documentation": {
+										"id": 77,
+										"nodeType": "StructuredDocumentation",
+										"src": "3869:301:0",
+										"text": "@notice Deposits (native) tokens to the DAO contract with a reference string.\n @param _token The address of the token or address(0) in case of the native token.\n @param _amount The amount of tokens to deposit.\n @param _reference The reference describing the deposit reason."
+									},
+									"functionSelector": "bfe07da6",
+									"id": 86,
+									"implemented": false,
+									"kind": "function",
+									"modifiers": [],
+									"name": "deposit",
+									"nameLocation": "4185:7:0",
+									"nodeType": "FunctionDefinition",
+									"parameters": {
+										"id": 84,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 79,
+												"mutability": "mutable",
+												"name": "_token",
+												"nameLocation": "4201:6:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 86,
+												"src": "4193:14:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 78,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "4193:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 81,
+												"mutability": "mutable",
+												"name": "_amount",
+												"nameLocation": "4217:7:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 86,
+												"src": "4209:15:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												},
+												"typeName": {
+													"id": 80,
+													"name": "uint256",
+													"nodeType": "ElementaryTypeName",
+													"src": "4209:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_uint256",
+														"typeString": "uint256"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 83,
+												"mutability": "mutable",
+												"name": "_reference",
+												"nameLocation": "4242:10:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 86,
+												"src": "4226:26:0",
+												"stateVariable": false,
+												"storageLocation": "calldata",
+												"typeDescriptions": {
+													"typeIdentifier": "t_string_calldata_ptr",
+													"typeString": "string"
+												},
+												"typeName": {
+													"id": 82,
+													"name": "string",
+													"nodeType": "ElementaryTypeName",
+													"src": "4226:6:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_string_storage_ptr",
+														"typeString": "string"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "4192:61:0"
+									},
+									"returnParameters": {
+										"id": 85,
+										"nodeType": "ParameterList",
+										"parameters": [],
+										"src": "4270:0:0"
+									},
+									"scope": 153,
+									"src": "4176:95:0",
+									"stateMutability": "payable",
+									"virtual": false,
+									"visibility": "external"
+								},
+								{
+									"anonymous": false,
+									"documentation": {
+										"id": 87,
+										"nodeType": "StructuredDocumentation",
+										"src": "4279:301:0",
+										"text": "@notice Emitted when a token deposit has been made to the DAO.\n @param sender The address of the sender.\n @param token The address of the deposited token.\n @param amount The amount of tokens deposited.\n @param _reference The reference describing the deposit reason."
+									},
+									"eventSelector": "2bc500cf071be2d1c1458ed6ff484cd4db4345ada8943dee7ff29e7af3558f76",
+									"id": 97,
+									"name": "Deposited",
+									"nameLocation": "4592:9:0",
+									"nodeType": "EventDefinition",
+									"parameters": {
+										"id": 96,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 89,
+												"indexed": true,
+												"mutability": "mutable",
+												"name": "sender",
+												"nameLocation": "4628:6:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 97,
+												"src": "4612:22:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 88,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "4612:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 91,
+												"indexed": true,
+												"mutability": "mutable",
+												"name": "token",
+												"nameLocation": "4661:5:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 97,
+												"src": "4645:21:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 90,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "4645:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 93,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "amount",
+												"nameLocation": "4685:6:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 97,
+												"src": "4677:14:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												},
+												"typeName": {
+													"id": 92,
+													"name": "uint256",
+													"nodeType": "ElementaryTypeName",
+													"src": "4677:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_uint256",
+														"typeString": "uint256"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 95,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "_reference",
+												"nameLocation": "4709:10:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 97,
+												"src": "4702:17:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_string_memory_ptr",
+													"typeString": "string"
+												},
+												"typeName": {
+													"id": 94,
+													"name": "string",
+													"nodeType": "ElementaryTypeName",
+													"src": "4702:6:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_string_storage_ptr",
+														"typeString": "string"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "4601:125:0"
+									},
+									"src": "4586:141:0"
+								},
+								{
+									"anonymous": false,
+									"documentation": {
+										"id": 98,
+										"nodeType": "StructuredDocumentation",
+										"src": "4735:403:0",
+										"text": "@notice Emitted when a native token deposit has been made to the DAO.\n @dev This event is intended to be emitted in the `receive` function and is therefore bound by the gas limitations for `send`/`transfer` calls introduced by [ERC-2929](https://eips.ethereum.org/EIPS/eip-2929).\n @param sender The address of the sender.\n @param amount The amount of native tokens deposited."
+									},
+									"eventSelector": "62c2c8e34665db7c56b2cabd7f5fb9702ccd352ffa8150147e450797e9f8e8f3",
+									"id": 104,
+									"name": "NativeTokenDeposited",
+									"nameLocation": "5150:20:0",
+									"nodeType": "EventDefinition",
+									"parameters": {
+										"id": 103,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 100,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "sender",
+												"nameLocation": "5179:6:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 104,
+												"src": "5171:14:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 99,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "5171:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 102,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "amount",
+												"nameLocation": "5195:6:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 104,
+												"src": "5187:14:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_uint256",
+													"typeString": "uint256"
+												},
+												"typeName": {
+													"id": 101,
+													"name": "uint256",
+													"nodeType": "ElementaryTypeName",
+													"src": "5187:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_uint256",
+														"typeString": "uint256"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "5170:32:0"
+									},
+									"src": "5144:59:0"
+								},
+								{
+									"documentation": {
+										"id": 105,
+										"nodeType": "StructuredDocumentation",
+										"src": "5211:141:0",
+										"text": "@notice Setter for the trusted forwarder verifying the meta transaction.\n @param _trustedForwarder The trusted forwarder address."
+									},
+									"functionSelector": "da742228",
+									"id": 110,
+									"implemented": false,
+									"kind": "function",
+									"modifiers": [],
+									"name": "setTrustedForwarder",
+									"nameLocation": "5367:19:0",
+									"nodeType": "FunctionDefinition",
+									"parameters": {
+										"id": 108,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 107,
+												"mutability": "mutable",
+												"name": "_trustedForwarder",
+												"nameLocation": "5395:17:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 110,
+												"src": "5387:25:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 106,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "5387:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "5386:27:0"
+									},
+									"returnParameters": {
+										"id": 109,
+										"nodeType": "ParameterList",
+										"parameters": [],
+										"src": "5422:0:0"
+									},
+									"scope": 153,
+									"src": "5358:65:0",
+									"stateMutability": "nonpayable",
+									"virtual": false,
+									"visibility": "external"
+								},
+								{
+									"documentation": {
+										"id": 111,
+										"nodeType": "StructuredDocumentation",
+										"src": "5431:124:0",
+										"text": "@notice Getter for the trusted forwarder verifying the meta transaction.\n @return The trusted forwarder address."
+									},
+									"functionSelector": "ce1b815f",
+									"id": 116,
+									"implemented": false,
+									"kind": "function",
+									"modifiers": [],
+									"name": "getTrustedForwarder",
+									"nameLocation": "5570:19:0",
+									"nodeType": "FunctionDefinition",
+									"parameters": {
+										"id": 112,
+										"nodeType": "ParameterList",
+										"parameters": [],
+										"src": "5589:2:0"
+									},
+									"returnParameters": {
+										"id": 115,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 114,
+												"mutability": "mutable",
+												"name": "",
+												"nameLocation": "-1:-1:-1",
+												"nodeType": "VariableDeclaration",
+												"scope": 116,
+												"src": "5615:7:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 113,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "5615:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "5614:9:0"
+									},
+									"scope": 153,
+									"src": "5561:63:0",
+									"stateMutability": "view",
+									"virtual": false,
+									"visibility": "external"
+								},
+								{
+									"anonymous": false,
+									"documentation": {
+										"id": 117,
+										"nodeType": "StructuredDocumentation",
+										"src": "5632:119:0",
+										"text": "@notice Emitted when a new TrustedForwarder is set on the DAO.\n @param forwarder the new forwarder address."
+									},
+									"eventSelector": "d91237492a9e30cd2faf361fc103998a382ff0ec2b1b07dc1cbebb76ae2f1ea2",
+									"id": 121,
+									"name": "TrustedForwarderSet",
+									"nameLocation": "5763:19:0",
+									"nodeType": "EventDefinition",
+									"parameters": {
+										"id": 120,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 119,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "forwarder",
+												"nameLocation": "5791:9:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 121,
+												"src": "5783:17:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 118,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "5783:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "5782:19:0"
+									},
+									"src": "5757:45:0"
+								},
+								{
+									"documentation": {
+										"id": 122,
+										"nodeType": "StructuredDocumentation",
+										"src": "5810:184:0",
+										"text": "@notice Setter for the [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) signature validator contract.\n @param _signatureValidator The address of the signature validator."
+									},
+									"functionSelector": "3e2ab0d9",
+									"id": 127,
+									"implemented": false,
+									"kind": "function",
+									"modifiers": [],
+									"name": "setSignatureValidator",
+									"nameLocation": "6009:21:0",
+									"nodeType": "FunctionDefinition",
+									"parameters": {
+										"id": 125,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 124,
+												"mutability": "mutable",
+												"name": "_signatureValidator",
+												"nameLocation": "6039:19:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 127,
+												"src": "6031:27:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 123,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "6031:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "6030:29:0"
+									},
+									"returnParameters": {
+										"id": 126,
+										"nodeType": "ParameterList",
+										"parameters": [],
+										"src": "6068:0:0"
+									},
+									"scope": 153,
+									"src": "6000:69:0",
+									"stateMutability": "nonpayable",
+									"virtual": false,
+									"visibility": "external"
+								},
+								{
+									"anonymous": false,
+									"documentation": {
+										"id": 128,
+										"nodeType": "StructuredDocumentation",
+										"src": "6077:143:0",
+										"text": "@notice Emitted when the signature validator address is updated.\n @param signatureValidator The address of the signature validator."
+									},
+									"eventSelector": "3b25c5d3870ec0eac28822b177f18c9130233ade5b7f857c6a224a507c37fc4e",
+									"id": 132,
+									"name": "SignatureValidatorSet",
+									"nameLocation": "6232:21:0",
+									"nodeType": "EventDefinition",
+									"parameters": {
+										"id": 131,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 130,
+												"indexed": false,
+												"mutability": "mutable",
+												"name": "signatureValidator",
+												"nameLocation": "6262:18:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 132,
+												"src": "6254:26:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_address",
+													"typeString": "address"
+												},
+												"typeName": {
+													"id": 129,
+													"name": "address",
+													"nodeType": "ElementaryTypeName",
+													"src": "6254:7:0",
+													"stateMutability": "nonpayable",
+													"typeDescriptions": {
+														"typeIdentifier": "t_address",
+														"typeString": "address"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "6253:28:0"
+									},
+									"src": "6226:56:0"
+								},
+								{
+									"documentation": {
+										"id": 133,
+										"nodeType": "StructuredDocumentation",
+										"src": "6290:409:0",
+										"text": "@notice Checks whether a signature is valid for the provided hash by forwarding the call to the set [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271) signature validator contract.\n @param _hash The hash of the data to be signed.\n @param _signature The signature byte array associated with `_hash`.\n @return Returns the `bytes4` magic value `0x1626ba7e` if the signature is valid."
+									},
+									"functionSelector": "1626ba7e",
+									"id": 142,
+									"implemented": false,
+									"kind": "function",
+									"modifiers": [],
+									"name": "isValidSignature",
+									"nameLocation": "6714:16:0",
+									"nodeType": "FunctionDefinition",
+									"parameters": {
+										"id": 138,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 135,
+												"mutability": "mutable",
+												"name": "_hash",
+												"nameLocation": "6739:5:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 142,
+												"src": "6731:13:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes32",
+													"typeString": "bytes32"
+												},
+												"typeName": {
+													"id": 134,
+													"name": "bytes32",
+													"nodeType": "ElementaryTypeName",
+													"src": "6731:7:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes32",
+														"typeString": "bytes32"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 137,
+												"mutability": "mutable",
+												"name": "_signature",
+												"nameLocation": "6759:10:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 142,
+												"src": "6746:23:0",
+												"stateVariable": false,
+												"storageLocation": "memory",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes_memory_ptr",
+													"typeString": "bytes"
+												},
+												"typeName": {
+													"id": 136,
+													"name": "bytes",
+													"nodeType": "ElementaryTypeName",
+													"src": "6746:5:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes_storage_ptr",
+														"typeString": "bytes"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "6730:40:0"
+									},
+									"returnParameters": {
+										"id": 141,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 140,
+												"mutability": "mutable",
+												"name": "",
+												"nameLocation": "-1:-1:-1",
+												"nodeType": "VariableDeclaration",
+												"scope": 142,
+												"src": "6789:6:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes4",
+													"typeString": "bytes4"
+												},
+												"typeName": {
+													"id": 139,
+													"name": "bytes4",
+													"nodeType": "ElementaryTypeName",
+													"src": "6789:6:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes4",
+														"typeString": "bytes4"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "6788:8:0"
+									},
+									"scope": 153,
+									"src": "6705:92:0",
+									"stateMutability": "nonpayable",
+									"virtual": false,
+									"visibility": "external"
+								},
+								{
+									"documentation": {
+										"id": 143,
+										"nodeType": "StructuredDocumentation",
+										"src": "6805:388:0",
+										"text": "@notice Registers an ERC standard having a callback by registering its [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID and callback function signature.\n @param _interfaceId The ID of the interface.\n @param _callbackSelector The selector of the callback function.\n @param _magicNumber The magic number to be registered for the function signature."
+									},
+									"functionSelector": "c4a50145",
+									"id": 152,
+									"implemented": false,
+									"kind": "function",
+									"modifiers": [],
+									"name": "registerStandardCallback",
+									"nameLocation": "7208:24:0",
+									"nodeType": "FunctionDefinition",
+									"parameters": {
+										"id": 150,
+										"nodeType": "ParameterList",
+										"parameters": [
+											{
+												"constant": false,
+												"id": 145,
+												"mutability": "mutable",
+												"name": "_interfaceId",
+												"nameLocation": "7250:12:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 152,
+												"src": "7243:19:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes4",
+													"typeString": "bytes4"
+												},
+												"typeName": {
+													"id": 144,
+													"name": "bytes4",
+													"nodeType": "ElementaryTypeName",
+													"src": "7243:6:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes4",
+														"typeString": "bytes4"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 147,
+												"mutability": "mutable",
+												"name": "_callbackSelector",
+												"nameLocation": "7280:17:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 152,
+												"src": "7273:24:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes4",
+													"typeString": "bytes4"
+												},
+												"typeName": {
+													"id": 146,
+													"name": "bytes4",
+													"nodeType": "ElementaryTypeName",
+													"src": "7273:6:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes4",
+														"typeString": "bytes4"
+													}
+												},
+												"visibility": "internal"
+											},
+											{
+												"constant": false,
+												"id": 149,
+												"mutability": "mutable",
+												"name": "_magicNumber",
+												"nameLocation": "7315:12:0",
+												"nodeType": "VariableDeclaration",
+												"scope": 152,
+												"src": "7308:19:0",
+												"stateVariable": false,
+												"storageLocation": "default",
+												"typeDescriptions": {
+													"typeIdentifier": "t_bytes4",
+													"typeString": "bytes4"
+												},
+												"typeName": {
+													"id": 148,
+													"name": "bytes4",
+													"nodeType": "ElementaryTypeName",
+													"src": "7308:6:0",
+													"typeDescriptions": {
+														"typeIdentifier": "t_bytes4",
+														"typeString": "bytes4"
+													}
+												},
+												"visibility": "internal"
+											}
+										],
+										"src": "7232:102:0"
+									},
+									"returnParameters": {
+										"id": 151,
+										"nodeType": "ParameterList",
+										"parameters": [],
+										"src": "7343:0:0"
+									},
+									"scope": 153,
+									"src": "7199:145:0",
+									"stateMutability": "nonpayable",
+									"virtual": false,
+									"visibility": "external"
+								}
+							],
+							"scope": 154,
+							"src": "220:7127:0",
+							"usedErrors": []
+						}
+					],
+					"src": "49:7298:0"
+				},
+				"id": 0
+			}
+		}
+	}
+}

@@ -1,0 +1,417 @@
+{
+	"compiler": {
+		"version": "0.8.19+commit.7dd6d404"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "proposalId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "voter",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "enum IMajorityVoting.VoteOption",
+						"name": "voteOption",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "votingPower",
+						"type": "uint256"
+					}
+				],
+				"name": "VoteCast",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_proposalId",
+						"type": "uint256"
+					}
+				],
+				"name": "canExecute",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_proposalId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "_account",
+						"type": "address"
+					},
+					{
+						"internalType": "enum IMajorityVoting.VoteOption",
+						"name": "_voteOption",
+						"type": "uint8"
+					}
+				],
+				"name": "canVote",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_proposalId",
+						"type": "uint256"
+					}
+				],
+				"name": "execute",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_proposalId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "_account",
+						"type": "address"
+					}
+				],
+				"name": "getVoteOption",
+				"outputs": [
+					{
+						"internalType": "enum IMajorityVoting.VoteOption",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_proposalId",
+						"type": "uint256"
+					}
+				],
+				"name": "isMinParticipationReached",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_proposalId",
+						"type": "uint256"
+					}
+				],
+				"name": "isSupportThresholdReached",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_proposalId",
+						"type": "uint256"
+					}
+				],
+				"name": "isSupportThresholdReachedEarly",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "minParticipation",
+				"outputs": [
+					{
+						"internalType": "uint32",
+						"name": "",
+						"type": "uint32"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "supportThreshold",
+				"outputs": [
+					{
+						"internalType": "uint32",
+						"name": "",
+						"type": "uint32"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_proposalId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "enum IMajorityVoting.VoteOption",
+						"name": "_voteOption",
+						"type": "uint8"
+					},
+					{
+						"internalType": "bool",
+						"name": "_tryEarlyExecution",
+						"type": "bool"
+					}
+				],
+				"name": "vote",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"author": "Aragon Association - 2022-2023",
+			"events": {
+				"VoteCast(uint256,address,uint8,uint256)": {
+					"params": {
+						"proposalId": "The ID of the proposal.",
+						"voteOption": "The casted vote option.",
+						"voter": "The voter casting the vote.",
+						"votingPower": "The voting power behind this vote."
+					}
+				}
+			},
+			"kind": "dev",
+			"methods": {
+				"canExecute(uint256)": {
+					"params": {
+						"_proposalId": "The ID of the proposal to be checked."
+					},
+					"returns": {
+						"_0": "True if the proposal can be executed, false otherwise."
+					}
+				},
+				"canVote(uint256,address,uint8)": {
+					"details": "The function assumes the queried proposal exists.",
+					"params": {
+						"_account": "The account address to be checked.",
+						"_proposalId": "The proposal Id.",
+						"_voteOption": "Whether the voter abstains, supports or opposes the proposal."
+					},
+					"returns": {
+						"_0": "Returns true if the account is allowed to vote."
+					}
+				},
+				"execute(uint256)": {
+					"params": {
+						"_proposalId": "The ID of the proposal to be executed."
+					}
+				},
+				"getVoteOption(uint256,address)": {
+					"params": {
+						"_account": "The account address to be checked.",
+						"_proposalId": "The ID of the proposal."
+					},
+					"returns": {
+						"_0": "The vote option cast by a voter for a certain proposal."
+					}
+				},
+				"isMinParticipationReached(uint256)": {
+					"params": {
+						"_proposalId": "The ID of the proposal."
+					},
+					"returns": {
+						"_0": "Returns `true` if the participation is greater than the minimum particpation and `false` otherwise."
+					}
+				},
+				"isSupportThresholdReached(uint256)": {
+					"params": {
+						"_proposalId": "The ID of the proposal."
+					},
+					"returns": {
+						"_0": "Returns `true` if the  support is greater than the support threshold and `false` otherwise."
+					}
+				},
+				"isSupportThresholdReachedEarly(uint256)": {
+					"params": {
+						"_proposalId": "The ID of the proposal."
+					},
+					"returns": {
+						"_0": "Returns `true` if the worst-case support is greater than the support threshold and `false` otherwise."
+					}
+				},
+				"minParticipation()": {
+					"returns": {
+						"_0": "The minimum participation parameter."
+					}
+				},
+				"supportThreshold()": {
+					"returns": {
+						"_0": "The support threshold parameter."
+					}
+				},
+				"vote(uint256,uint8,bool)": {
+					"details": "`_voteOption`, 1 -> abstain, 2 -> yes, 3 -> no",
+					"params": {
+						"_proposalId": "The ID of the proposal.",
+						"_tryEarlyExecution": "If `true`,  early execution is tried after the vote cast. The call does not revert if early execution is not possible.",
+						"_voteOption": "The chosen vote option."
+					}
+				}
+			},
+			"title": "IMajorityVoting",
+			"version": 1
+		},
+		"userdoc": {
+			"events": {
+				"VoteCast(uint256,address,uint8,uint256)": {
+					"notice": "Emitted when a vote is cast by a voter."
+				}
+			},
+			"kind": "user",
+			"methods": {
+				"canExecute(uint256)": {
+					"notice": "Checks if a proposal can be executed."
+				},
+				"canVote(uint256,address,uint8)": {
+					"notice": "Checks if an account can participate on a proposal vote. This can be because the vote - has not started, - has ended, - was executed, or - the voter doesn't have voting powers."
+				},
+				"execute(uint256)": {
+					"notice": "Executes a proposal."
+				},
+				"getVoteOption(uint256,address)": {
+					"notice": "Returns whether the account has voted for the proposal.  Note, that this does not check if the account has voting power."
+				},
+				"isMinParticipationReached(uint256)": {
+					"notice": "Checks if the participation value defined as $$\\texttt{participation} = \\frac{N_\\text{yes}+N_\\text{no}+N_\\text{abstain}}{N_\\text{total}}$$ for a proposal vote is greater or equal than the minimum participation value."
+				},
+				"isSupportThresholdReached(uint256)": {
+					"notice": "Checks if the support value defined as $$\\texttt{support} = \\frac{N_\\text{yes}}{N_\\text{yes}+N_\\text{no}}$$ for a proposal vote is greater than the support threshold."
+				},
+				"isSupportThresholdReachedEarly(uint256)": {
+					"notice": "Checks if the worst-case support value defined as $$\\texttt{worstCaseSupport} = \\frac{N_\\text{yes}}{ N_\\text{total}-N_\\text{abstain}}$$ for a proposal vote is greater than the support threshold."
+				},
+				"minParticipation()": {
+					"notice": "Returns the minimum participation parameter stored in the voting settings."
+				},
+				"supportThreshold()": {
+					"notice": "Returns the support threshold parameter stored in the voting settings."
+				},
+				"vote(uint256,uint8,bool)": {
+					"notice": "Votes for a vote option and, optionally, executes the proposal."
+				}
+			},
+			"notice": "The interface of majority voting plugin.",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/SenderSingle.sol": "IMajorityVoting"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/SenderSingle.sol": {
+			"keccak256": "0x74c8f810ceac875937214cc5baa95d0dd5cb5dec5b6a273f194780e301d8d018",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://53ccca555deba015988af8b943fbe6216ae54a9ace75b4d33cd8632fd85cb809",
+				"dweb:/ipfs/QmS4CSdiTEBcd5reNtnLsorJ1bE5FKZHrzLgnBUkvmcLtu"
+			]
+		},
+		"https://github.com/axelarnetwork/axelar-gmp-sdk-solidity/blob/main/contracts/interfaces/IAxelarGasService.sol": {
+			"keccak256": "0xafab7fde3204bedcb81109a275dfb12f8999d190f0532e37d7e8c0f31dbf41de",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://865c86b90cc103e327c2fb530f7a21b76531be6f6cddab78aa891c9b60ad672e",
+				"dweb:/ipfs/QmTcN7XYyTh6zGkH1pMZaXzzQQn9QHHvKpLrc3RJLq5d5Z"
+			]
+		},
+		"https://github.com/axelarnetwork/axelar-gmp-sdk-solidity/blob/main/contracts/interfaces/IAxelarGateway.sol": {
+			"keccak256": "0xae3d4598622e927639e3cba383618476562631bc8afafe68b16dfbd1db21fd78",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://672c3b9284bbc02fd6692df94190f5fb76766a879cf826148e52cba921859b08",
+				"dweb:/ipfs/Qmbatsf6gW6GJsyuoah7Yuw3iQNGmhpm39i21eKXQURHD9"
+			]
+		},
+		"https://github.com/axelarnetwork/axelar-gmp-sdk-solidity/blob/main/contracts/interfaces/IERC20.sol": {
+			"keccak256": "0xb77ad755f4eade679279d5ca12b6926595e41e17387e143530f4fb57672d58d7",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://b0d01d0810d12dba98839b084440ab9b52e04d94e9431a6ffadabb1651d0f100",
+				"dweb:/ipfs/Qme9KLMtbmNvsAj2giGTzNFKAymkMJq88Ef445pLiawKWa"
+			]
+		}
+	},
+	"version": 1
+}

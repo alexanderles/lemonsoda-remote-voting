@@ -1,0 +1,288 @@
+{
+	"deploy": {
+		"VM:-": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"main:1": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"ropsten:3": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"rinkeby:4": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"kovan:42": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"goerli:5": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"Custom": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		}
+	},
+	"data": {
+		"bytecode": {
+			"functionDebugData": {},
+			"generatedSources": [],
+			"linkReferences": {},
+			"object": "",
+			"opcodes": "",
+			"sourceMap": ""
+		},
+		"deployedBytecode": {
+			"functionDebugData": {},
+			"generatedSources": [],
+			"immutableReferences": {},
+			"linkReferences": {},
+			"object": "",
+			"opcodes": "",
+			"sourceMap": ""
+		},
+		"gasEstimates": null,
+		"methodIdentifiers": {
+			"canExecute(uint256)": "cc63604a",
+			"canVote(uint256,address,uint8)": "17d1b404",
+			"execute(uint256)": "fe0d94c1",
+			"getVoteOption(uint256,address)": "970601d8",
+			"isMinParticipationReached(uint256)": "8a4b00f8",
+			"isSupportThresholdReached(uint256)": "cf131149",
+			"isSupportThresholdReachedEarly(uint256)": "0de21856",
+			"minParticipation()": "054fd2c2",
+			"supportThreshold()": "7c36e8e8",
+			"vote(uint256,uint8,bool)": "ce6366c4"
+		}
+	},
+	"abi": [
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "uint256",
+					"name": "proposalId",
+					"type": "uint256"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "voter",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "enum IMajorityVoting.VoteOption",
+					"name": "voteOption",
+					"type": "uint8"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "votingPower",
+					"type": "uint256"
+				}
+			],
+			"name": "VoteCast",
+			"type": "event"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_proposalId",
+					"type": "uint256"
+				}
+			],
+			"name": "canExecute",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_proposalId",
+					"type": "uint256"
+				},
+				{
+					"internalType": "address",
+					"name": "_account",
+					"type": "address"
+				},
+				{
+					"internalType": "enum IMajorityVoting.VoteOption",
+					"name": "_voteOption",
+					"type": "uint8"
+				}
+			],
+			"name": "canVote",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_proposalId",
+					"type": "uint256"
+				}
+			],
+			"name": "execute",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_proposalId",
+					"type": "uint256"
+				},
+				{
+					"internalType": "address",
+					"name": "_account",
+					"type": "address"
+				}
+			],
+			"name": "getVoteOption",
+			"outputs": [
+				{
+					"internalType": "enum IMajorityVoting.VoteOption",
+					"name": "",
+					"type": "uint8"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_proposalId",
+					"type": "uint256"
+				}
+			],
+			"name": "isMinParticipationReached",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_proposalId",
+					"type": "uint256"
+				}
+			],
+			"name": "isSupportThresholdReached",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_proposalId",
+					"type": "uint256"
+				}
+			],
+			"name": "isSupportThresholdReachedEarly",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "minParticipation",
+			"outputs": [
+				{
+					"internalType": "uint32",
+					"name": "",
+					"type": "uint32"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "supportThreshold",
+			"outputs": [
+				{
+					"internalType": "uint32",
+					"name": "",
+					"type": "uint32"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "_proposalId",
+					"type": "uint256"
+				},
+				{
+					"internalType": "enum IMajorityVoting.VoteOption",
+					"name": "_voteOption",
+					"type": "uint8"
+				},
+				{
+					"internalType": "bool",
+					"name": "_tryEarlyExecution",
+					"type": "bool"
+				}
+			],
+			"name": "vote",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	]
+}
