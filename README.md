@@ -10,3 +10,8 @@ In its current iteration, LemonSoda burns members' tokens once their vote is cas
 One of the primary advantages of LemonSoda's cross-chain governance protocol is that DAO members can bridge their governance tokens to other chains for use as collateral on DeFi platforms, liquidity in DEX's, avoid high gas fees, etc, while still retaining their voting power. Without LemonSoda, DAO members are often limited in what they can do with their governance tokens, as they are forced to keep them on the native DAO chain to prove their membership status and vote on proposals, or bridge back and forth whenever a new voting period is started.
 
 Overall, LemonSoda provides a powerful solution for DAO’s and their members looking to expand to other blockchains. By utilizing cross-chain communication, LemonSoda enables a seamless and secure process for members to vote on proposals from other blockchains while still maintaining their membership status within the DAO.
+
+## Experience Review
+
+Overall building on Axelar was challenging but rewarding. There were difficulties, especially with initial setup and running web-examples, but the documentation was very informative and guided us through the process.
+We struggled with sending our custom ERC20 token between chains and in retrospect would have looked further into the interchain token documentation if we had had more time.
